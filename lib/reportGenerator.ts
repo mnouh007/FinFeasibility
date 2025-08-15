@@ -232,8 +232,7 @@ export const generateDocxReport = async (options: ReportOptions): Promise<void> 
         if (imageDataUrl) {
             const base64String = imageDataUrl.replace(/^data:image\/png;base64,/, "");
             return new ImageRun({
-                type: "png",
-                data: base64ToUint8Array(base64String),
+                buffer: base64ToUint8Array(base64String),
                 transformation: { width: widthInches * 96, height: (widthInches * 96) * (5/8) },
             });
         }

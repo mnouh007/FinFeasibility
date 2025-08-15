@@ -1,11 +1,11 @@
-import React, { useState, useMemo } from 'react';
+import { useState, useMemo } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useProjectStore } from '../store/projectStore';
 import { Card } from '../components/ui/Card';
 import { Button } from '../components/ui/Button';
 import { NAV_ITEMS } from '../constants';
 import { generateReport, generateDocxReport } from '../lib/reportGenerator';
-import { CapitalInvestmentItem, OperatingCostItem, CalculatedOutputs, Scenario } from '../types';
+import { CapitalInvestmentItem, OperatingCostItem } from '../types';
 import * as gemini from '../services/geminiService';
 import { AIInsightBox } from '../components/ui/AIInsightBox';
 import { calculateFinancialOutputs } from '../lib/financial';
@@ -82,7 +82,7 @@ const M15_CustomReport = () => {
                             const modifiedProjectData = { ...projectData, estimationBasis: { ...projectData.estimationBasis, ...scenario.modifications } };
                             return { name: scenario.name, outputs: calculateFinancialOutputs(modifiedProjectData) };
                         });
-                        summary = await gemini.analyzeSensitivityResults(calculatedOutputs, projectData.sensitivityAnalysis.scenarios, scenarioResults, lang);
+                        summary = await gemini.analyzeSensitivityResults(calculatedOutputs, scenarioResults, lang);
                         break;
                     }
                     case 'm13': {

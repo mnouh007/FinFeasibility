@@ -5,7 +5,7 @@ import { Card } from '../components/ui/Card';
 import { Button } from '../components/ui/Button';
 import { Input } from '../components/ui/Input';
 import { Select } from '../components/ui/Select';
-import { MonteCarloVariableKey, Distribution, MonteCarloVariable } from '../types';
+import { Distribution, MonteCarloVariable } from '../types';
 import { AIInsightBox } from '../components/ui/AIInsightBox';
 import { summarizeSimulationResults } from '../services/geminiService';
 import { SimulationHistogram } from '../components/charts/SimulationHistogram';

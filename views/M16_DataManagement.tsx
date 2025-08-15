@@ -1,7 +1,5 @@
-import React from 'react';
 import { useTranslation } from 'react-i18next';
 import { Card } from '../components/ui/Card';
-import { Button } from '../components/ui/Button';
 
 const M16_DataManagement = () => {
   const { t } = useTranslation();

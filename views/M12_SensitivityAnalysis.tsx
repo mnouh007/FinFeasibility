@@ -155,7 +155,6 @@ const M12_SensitivityAnalysis = () => {
     try {
         const insight = await analyzeSensitivityResults(
             calculatedOutputs, 
-            sensitivityAnalysis.scenarios,
             scenarioResults,
             i18n.language
         );
