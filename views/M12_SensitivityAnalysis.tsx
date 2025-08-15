@@ -1,4 +1,4 @@
-import React, { useState, useMemo } from 'react';
+import { useState, useMemo } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useProjectStore } from '../store/projectStore';
 import { calculateFinancialOutputs } from '../lib/financial';
@@ -6,7 +6,7 @@ import { Card } from '../components/ui/Card';
 import { Button } from '../components/ui/Button';
 import { Input } from '../components/ui/Input';
 import { TrashIcon, PlusIcon } from '../components/ui/Icons';
-import { EstimationBasis, CalculatedOutputs, Scenario } from '../types';
+import { EstimationBasis, CalculatedOutputs } from '../types';
 import { ConfirmationModal } from '../components/modals/ConfirmationModal';
 import { AIInsightBox } from '../components/ui/AIInsightBox';
 import { analyzeSensitivityResults } from '../services/geminiService';

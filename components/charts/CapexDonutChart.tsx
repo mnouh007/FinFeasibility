@@ -11,7 +11,7 @@ interface CapexDonutChartProps {
 const COLORS = ['#3b82f6', '#16a34a', '#f97316', '#8b5cf6', '#ec4899', '#f59e0b'];
 
 export const CapexDonutChart: React.FC<CapexDonutChartProps> = ({ data }) => {
-  const { t, i18n } = useTranslation();
+  const { i18n } = useTranslation();
   const [isDarkMode] = useDarkMode();
   const { currency } = useProjectStore(state => state.projectData.estimationBasis);
   const legendColor = isDarkMode ? '#e2e8f0' : '#334155'; // slate-200, slate-700
@@ -48,7 +48,7 @@ export const CapexDonutChart: React.FC<CapexDonutChartProps> = ({ data }) => {
                     dataKey="value"
                     nameKey="name"
                 >
-                    {data.map((entry, index) => (
+                    {data.map((_, index) => (
                         <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
                     ))}
                 </Pie>

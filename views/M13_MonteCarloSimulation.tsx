@@ -5,7 +5,7 @@ import { Card } from '../components/ui/Card';
 import { Button } from '../components/ui/Button';
 import { Input } from '../components/ui/Input';
 import { Select } from '../components/ui/Select';
-import { MonteCarloVariableKey, Distribution, MonteCarloVariable, RevenueItem } from '../types';
+import { MonteCarloVariableKey, Distribution, MonteCarloVariable } from '../types';
 import { AIInsightBox } from '../components/ui/AIInsightBox';
 import { summarizeSimulationResults } from '../services/geminiService';
 import { SimulationHistogram } from '../components/charts/SimulationHistogram';
@@ -208,86 +208,65 @@ const ParametersCell = ({ variableId, settings }: { variableId: string, settings
     }
 
     const getParamLabels = (dist: Distribution): ParamLabels => {
-        const labels = t(`m13_monteCarloSimulation.distributions.paramLabels.${dist}`, { returnObjects: true });
-        if (typeof labels !== 'object' || labels === null) {
-            return { p1: 'Param 1', p2: 'Param 2', p3: 'Param 3' };
+        const labels = t(`m13_monteCarloSimulation.distributions.paramLabels.${dist}`, { returnObjects: true }) as ParamLabels;
+        if (typeof labels === 'object' && labels.p1 && labels.p2) {
+            return labels;
         }
-        return labels as ParamLabels;
+        return { p1: 'Param 1', p2: 'Param 2', p3: 'Param 3' };
     };
-    
+
     const labels = getParamLabels(settings.distribution);
-    const hasParam3 = settings.distribution === 'Triangular' || settings.distribution === 'PERT';
 
-    const handleUpdate = (paramKey: 'param1' | 'param2' | 'param3', value: string) => {
-        updateMonteCarloParameter(variableId, { [paramKey]: Number(value) });
-    };
-    
-    const renderInputs = () => {
-        const p1 = <ParameterInputGroup id={`${variableId}-p1`} label={labels.p1} value={settings.param1} onChange={(e) => handleUpdate('param1', e.target.value)} />;
-        const p2 = <ParameterInputGroup id={`${variableId}-p2`} label={labels.p2} value={settings.param2} onChange={(e) => handleUpdate('param2', e.target.value)} />;
-        const p3 = hasParam3 ? <ParameterInputGroup id={`${variableId}-p3`} label={labels.p3!} value={settings.param3 ?? ''} onChange={(e) => handleUpdate('param3', e.target.value)} /> : null;
-        
-        switch (settings.distribution) {
-            case 'Triangular':
-            case 'PERT':
-                // Order: Most Likely, Min, Max
-                return <>{p2}{p1}{p3}</>;
-            default:
-                return <>{p1}{p2}</>;
-        }
-    };
-
-    return <div className="flex items-center gap-x-3 gap-y-2 flex-wrap">{renderInputs()}</div>;
+    return (
+        <div className="flex flex-wrap gap-2 items-center">
+            <ParameterInputGroup
+                id={`${variableId}-p1`}
+                label={labels.p1}
+                value={settings.param1}
+                onChange={(e) => updateMonteCarloParameter(variableId, { param1: Number(e.target.value) })}
+            />
+            <ParameterInputGroup
+                id={`${variableId}-p2`}
+                label={labels.p2}
+                value={settings.param2}
+                onChange={(e) => updateMonteCarloParameter(variableId, { param2: Number(e.target.value) })}
+            />
+            {labels.p3 && (
+                <ParameterInputGroup
+                    id={`${variableId}-p3`}
+                    label={labels.p3}
+                    value={settings.param3 ?? ''}
+                    onChange={(e) => updateMonteCarloParameter(variableId, { param3: Number(e.target.value) })}
+                />
+            )}
+        </div>
+    );
 };
-
 
 const M13_MonteCarloSimulation = () => {
     const { t, i18n } = useTranslation();
+    const store = useProjectStore();
     const { 
         projectData, 
-        simulationStatus, 
-        simulationProgress,
-        simulationResults,
-        simulationRawData,
-        updateMonteCarloIterations,
-        updateMonteCarloParameter,
-        setSimulationStatus,
-        setSimulationProgress,
-        setSimulationResults,
-        setSimulationRawData,
-    } = useProjectStore();
-    
-    const workerRef = useRef<{ worker: Worker, url: string } | null>(null);
+        updateMonteCarloIterations, updateMonteCarloParameter,
+        simulationStatus, simulationProgress, simulationResults,
+        setSimulationStatus, setSimulationProgress, setSimulationResults,
+        setSimulationRawData, simulationRawData
+    } = store;
+
+    const workerRef = useRef<Worker | null>(null);
     const [aiInsight, setAiInsight] = useState<string | null>(null);
     const [isAiLoading, setIsAiLoading] = useState(false);
     const [visualizedKpi, setVisualizedKpi] = useState<KpiKey>('npv');
     const [chartType, setChartType] = useState<'pdf' | 'cdf'>('pdf');
-
-
-    const handleRunSimulation = useCallback(() => {
-        if (simulationStatus === 'running') return;
-
-        setSimulationStatus('running');
-        setSimulationProgress(0);
-        setSimulationResults(null);
-        setSimulationRawData(null);
-        setAiInsight(null);
-        
-        if (workerRef.current) {
-            workerRef.current.worker.terminate();
-            URL.revokeObjectURL(workerRef.current.url);
-        }
-
+    
+    // Create worker on mount
+    useEffect(() => {
         const blob = new Blob([workerScript], { type: 'application/javascript' });
         const workerUrl = URL.createObjectURL(blob);
-        const worker = new Worker(workerUrl);
-        workerRef.current = { worker, url: workerUrl };
-        
-        worker.postMessage({
-            projectData: projectData
-        });
+        workerRef.current = new Worker(workerUrl);
 
-        worker.onmessage = (event) => {
+        workerRef.current.onmessage = (event) => {
             const { type, payload } = event.data;
             if (type === 'progress') {
                 setSimulationProgress(payload.progress);
@@ -295,41 +274,27 @@ const M13_MonteCarloSimulation = () => {
                 setSimulationResults(payload.results);
                 setSimulationRawData(payload.rawData);
                 setSimulationStatus('done');
-                if (workerRef.current) {
-                    workerRef.current.worker.terminate();
-                    URL.revokeObjectURL(workerRef.current.url);
-                    workerRef.current = null;
-                }
             } else if (type === 'error') {
-                console.error("Simulation worker error:", payload.error);
+                console.error('Simulation Worker Error:', payload.error);
                 setSimulationStatus('idle');
-                if (workerRef.current) {
-                    workerRef.current.worker.terminate();
-                    URL.revokeObjectURL(workerRef.current.url);
-                    workerRef.current = null;
-                }
             }
         };
-
-        worker.onerror = (error) => {
-            console.error('Worker error:', error);
-            setSimulationStatus('idle');
-             if (workerRef.current) {
-                URL.revokeObjectURL(workerRef.current.url);
-                workerRef.current = null;
-            }
-        };
-
-    }, [projectData, simulationStatus, setSimulationStatus, setSimulationProgress, setSimulationResults, setSimulationRawData]);
-
-    useEffect(() => {
+        
         return () => {
-            if (workerRef.current) {
-                workerRef.current.worker.terminate();
-                URL.revokeObjectURL(workerRef.current.url);
-            }
+            workerRef.current?.terminate();
+            URL.revokeObjectURL(workerUrl);
         };
     }, []);
+
+    const runSimulation = useCallback(() => {
+        if (simulationStatus === 'running') return;
+        setSimulationStatus('running');
+        setSimulationProgress(0);
+        setSimulationResults(null);
+        setSimulationRawData(null);
+        setAiInsight(null);
+        workerRef.current?.postMessage({ projectData });
+    }, [projectData, simulationStatus]);
 
     const handleGenerateAnalysis = async () => {
         if (!simulationResults) return;
@@ -339,269 +304,118 @@ const M13_MonteCarloSimulation = () => {
             const insight = await summarizeSimulationResults(simulationResults, projectData.definition.projectName, i18n.language);
             setAiInsight(insight);
         } catch (error) {
-            console.error("AI Analysis Generation Failed:", error);
+            console.error("AI Simulation Analysis Failed:", error);
             setAiInsight(t('m13_monteCarloSimulation.aiSummary.error'));
         } finally {
             setIsAiLoading(false);
         }
     };
-
-    const allStochasticVariables = useMemo(() => {
-        const variables: { id: string; name: string; baseValue: number }[] = [];
-        
-        const ebKeys: { key: MonteCarloVariableKey, label: string }[] = [
-            { key: 'discountRate', label: t('m2_estimationBasis.discountRate') },
-            { key: 'taxRate', label: t('m2_estimationBasis.taxRate') },
-            { key: 'inflationRate', label: t('m2_estimationBasis.inflationRate') },
-            { key: 'revenueGrowthRate', label: t('m2_estimationBasis.revenueGrowthRate') },
-            { key: 'variableCostGrowthRate', label: t('m2_estimationBasis.variableCostGrowthRate') },
-            { key: 'fixedCostGrowthRate', label: t('m2_estimationBasis.fixedCostGrowthRate') },
-        ];
-        ebKeys.forEach(({ key, label }) => {
-            variables.push({
-                id: `eb-${key}`,
-                name: label,
-                baseValue: projectData.estimationBasis[key]
-            });
-        });
-
-        projectData.operatingInputs.revenues.forEach((rev, index) => {
-            const revName = rev.item || `Revenue ${index + 1}`;
-            variables.push({
-                id: `rev-${rev.id}-unitPrice`,
-                name: `${revName} - ${t('m5_operatingInputs.table.unitPrice')}`,
-                baseValue: rev.unitPrice
-            });
-             variables.push({
-                id: `rev-${rev.id}-quantity`,
-                name: `${revName} - ${t('m5_operatingInputs.table.quantity')}`,
-                baseValue: rev.quantity
-            });
-        });
-
-        return variables;
-    }, [projectData.estimationBasis, projectData.operatingInputs.revenues, t]);
-
-    const handleDistributionChange = (id: string, newDist: Distribution, baseValue: number) => {
-        const currentSettings = projectData.monteCarlo.variables[id];
-        let newParams: Partial<MonteCarloVariable> = { distribution: newDist };
-
-        if (currentSettings?.distribution !== newDist) {
-            // Set sensible defaults when changing distribution type
-            switch (newDist) {
-                case 'Normal':
-                    newParams = { ...newParams, param1: baseValue, param2: baseValue * 0.1 };
-                    break;
-                case 'Uniform':
-                    newParams = { ...newParams, param1: baseValue * 0.8, param2: baseValue * 1.2 };
-                    break;
-                case 'Triangular':
-                case 'PERT':
-                    newParams = { ...newParams, param1: baseValue * 0.75, param2: baseValue, param3: baseValue * 1.25 };
-                    break;
-                default:
-                    newParams = { ...newParams, param1: 0, param2: 0, param3: 0 };
-            }
-        }
-        updateMonteCarloParameter(id, newParams);
-    };
-
-    const formatValue = (value: number, isPercent = false, isCurrency = false) => {
-        if (isNaN(value) || !isFinite(value)) return t('m9_financialEvaluation.notApplicable');
-        if (isCurrency) {
-            return new Intl.NumberFormat(i18n.language, { style: 'currency', currency: projectData.estimationBasis.currency, minimumFractionDigits: 0 }).format(value);
-        }
-        if (isPercent) {
-            return new Intl.NumberFormat(i18n.language, { style: 'percent', minimumFractionDigits: 2 }).format(value / 100);
-        }
-        return new Intl.NumberFormat(i18n.language, { minimumFractionDigits: 2, maximumFractionDigits: 2 }).format(value);
-    };
-
-    const resultsKpis: { key: KpiKey; label: string; isCurrency: boolean; isPercent: boolean; }[] = [
-        { key: 'npv', label: t('m9_financialEvaluation.npvTitle'), isCurrency: true, isPercent: false },
-        { key: 'irr', label: t('m9_financialEvaluation.irrTitle'), isCurrency: false, isPercent: true },
-        { key: 'roi', label: t('m9_financialEvaluation.roiTitle'), isCurrency: false, isPercent: true },
-        { key: 'paybackPeriod', label: t('m9_financialEvaluation.paybackPeriodTitle'), isCurrency: false, isPercent: false }
-    ];
-
-    const defaultVar: MonteCarloVariable = { distribution: 'None', param1: 0, param2: 0 };
     
-    const kpiLabel = useMemo(() => resultsKpis.find(k => k.key === visualizedKpi)?.label || '', [visualizedKpi, resultsKpis]);
+    const formatNumber = (val: number | undefined, precision = 2) => (val !== undefined && isFinite(val) ? val.toFixed(precision) : 'N/A');
+    const formatPercent = (val: number | undefined) => (val !== undefined && isFinite(val) ? `${(val * 100).toFixed(1)}%` : 'N/A');
 
-    const chartTitle = useMemo(() => {
-        if (!kpiLabel) return t('m13_monteCarloSimulation.visualizationTitle');
-        return chartType === 'pdf'
-            ? t('m13_monteCarloSimulation.distributionTitle', { kpi: kpiLabel })
-            : t('m13_monteCarloSimulation.cdfTitle', { kpi: kpiLabel });
-    }, [chartType, kpiLabel, t]);
+    const variables: { id: string; name: string; baseValue: number; }[] = useMemo(() => [
+        { id: 'eb-discountRate', name: t('m2_estimationBasis.discountRate'), baseValue: projectData.estimationBasis.discountRate },
+        { id: 'eb-taxRate', name: t('m2_estimationBasis.taxRate'), baseValue: projectData.estimationBasis.taxRate },
+        { id: 'eb-revenueGrowthRate', name: t('m2_estimationBasis.revenueGrowthRate'), baseValue: projectData.estimationBasis.revenueGrowthRate },
+        { id: 'eb-variableCostGrowthRate', name: t('m2_estimationBasis.variableCostGrowthRate'), baseValue: projectData.estimationBasis.variableCostGrowthRate },
+        { id: 'eb-fixedCostGrowthRate', name: t('m2_estimationBasis.fixedCostGrowthRate'), baseValue: projectData.estimationBasis.fixedCostGrowthRate },
+        ...projectData.operatingInputs.revenues.map(r => ({ id: `rev-${r.id}-unitPrice`, name: `${r.item} (${t('m5_operatingInputs.table.unitPrice')})`, baseValue: r.unitPrice })),
+    ], [projectData, t]);
+
+    const kpiDisplayData = useMemo(() => {
+        if (!simulationResults) return [];
+        return [
+            { key: 'npv', label: t('m9_financialEvaluation.npvTitle'), isCurrency: true, isPercent: false },
+            { key: 'irr', label: t('m9_financialEvaluation.irrTitle'), isCurrency: false, isPercent: true },
+            { key: 'roi', label: t('m9_financialEvaluation.roiTitle'), isCurrency: false, isPercent: true },
+            { key: 'paybackPeriod', label: t('m9_financialEvaluation.paybackPeriodTitle'), isCurrency: false, isPercent: false },
+        ];
+    }, [simulationResults, t]);
+
 
     return (
         <div className="space-y-6">
-            <h1 className="text-3xl font-bold">{t('m13_monteCarloSimulation.title')}</h1>
+            <h1 className="text-3xl font-bold">{t('sidebar.m13')}</h1>
             <p className="text-slate-600 dark:text-slate-300">{t('m13_monteCarloSimulation.description')}</p>
 
-            <Card>
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-6 items-center">
-                    <div className="md:col-span-1">
-                        <label htmlFor="iterations" className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">{t('m13_monteCarloSimulation.iterationsLabel')}</label>
-                        <Input 
-                            id="iterations"
-                            type="number"
-                            min="100"
-                            step="100"
-                            value={projectData.monteCarlo.iterations}
-                            onChange={e => updateMonteCarloIterations(Number(e.target.value))}
-                            disabled={simulationStatus === 'running'}
-                        />
-                    </div>
-                    <div className="md:col-span-2 flex justify-end">
-                         <Button onClick={handleRunSimulation} disabled={simulationStatus === 'running'} className="w-full sm:w-auto">
-                            {simulationStatus === 'running' ? t('m13_monteCarloSimulation.runningButton') : t('m13_monteCarloSimulation.runButton')}
-                        </Button>
-                    </div>
-                </div>
-                 {simulationStatus === 'running' && (
-                    <div className="mt-4">
-                        <div className="w-full bg-slate-200 rounded-full h-2.5 dark:bg-slate-700">
-                            <div className="bg-blue-600 h-2.5 rounded-full" style={{ width: `${simulationProgress}%` }}></div>
-                        </div>
-                        <p className="text-center text-xs mt-1">{t('m13_monteCarloSimulation.simulationInProgress')} {simulationProgress.toFixed(0)}%</p>
-                    </div>
-                )}
-            </Card>
-
-            <Card title={t('m13_monteCarloSimulation.variablesTitle')}>
-                <div className="overflow-x-auto">
-                    <table className="min-w-full text-sm">
-                        <thead className="text-left text-xs uppercase text-slate-500 dark:text-slate-400">
-                            <tr>
-                                <th className="p-2 w-2/5">{t('m13_monteCarloSimulation.table.variable')}</th>
-                                <th className="p-2 w-1/5">{t('m13_monteCarloSimulation.table.distribution')}</th>
-                                <th className="p-2 w-2/5">{t('m13_monteCarloSimulation.table.parameters')}</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            {allStochasticVariables.map(({ id, name, baseValue }) => {
-                                const settings = projectData.monteCarlo.variables[id] || defaultVar;
-                                return (
-                                <tr key={id} className="border-t border-slate-200 dark:border-slate-700">
-                                    <td className="p-2 font-medium">{name}</td>
-                                    <td className="p-2">
-                                        <Select value={settings.distribution} onChange={e => handleDistributionChange(id, e.target.value as Distribution, baseValue)}>
-                                            <option value="None">{t('m13_monteCarloSimulation.distributions.None')}</option>
-                                            <option value="Normal">{t('m13_monteCarloSimulation.distributions.Normal')}</option>
-                                            <option value="Uniform">{t('m13_monteCarloSimulation.distributions.Uniform')}</option>
-                                            <option value="Triangular">{t('m13_monteCarloSimulation.distributions.Triangular')}</option>
-                                            <option value="Lognormal">{t('m13_monteCarloSimulation.distributions.Lognormal')}</option>
-                                            <option value="Beta">{t('m13_monteCarloSimulation.distributions.Beta')}</option>
-                                            <option value="PERT">{t('m13_monteCarloSimulation.distributions.PERT')}</option>
-                                        </Select>
-                                    </td>
-                                    <td className="p-2">
-                                        <ParametersCell variableId={id} settings={settings} />
-                                    </td>
-                                </tr>
-                            )})}
-                        </tbody>
-                    </table>
-                </div>
-            </Card>
-
-            {simulationStatus === 'done' && simulationResults && (
-                <div className='space-y-6'>
-                    <Card title={t('m13_monteCarloSimulation.resultsTitle')}>
-                        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                            <div className="overflow-x-auto">
-                                <table className="min-w-full text-sm">
-                                    <thead className="text-left text-xs uppercase text-slate-500 dark:text-slate-400">
-                                        <tr>
-                                            <th className="p-2">{t('m13_monteCarloSimulation.resultsTable.kpi')}</th>
-                                            <th className="p-2 text-right">{t('m13_monteCarloSimulation.resultsTable.mean')}</th>
-                                            <th className="p-2 text-right">{t('m13_monteCarloSimulation.resultsTable.median')}</th>
-                                            <th className="p-2 text-right">{t('m13_monteCarloSimulation.resultsTable.stdDev')}</th>
-                                            <th className="p-2 text-right">{t('m13_monteCarloSimulation.resultsTable.p10')}</th>
-                                            <th className="p-2 text-right">{t('m13_monteCarloSimulation.resultsTable.p25')}</th>
-                                            <th className="p-2 text-right">{t('m13_monteCarloSimulation.resultsTable.p75')}</th>
-                                            <th className="p-2 text-right">{t('m13_monteCarloSimulation.resultsTable.p90')}</th>
+            <div className="grid grid-cols-1 lg:grid-cols-5 gap-6">
+                <div className="lg:col-span-3">
+                    <Card title={t('m13_monteCarloSimulation.variablesTitle')}>
+                        <div className="overflow-x-auto">
+                            <table className="min-w-full divide-y divide-slate-200 dark:divide-slate-700">
+                                <thead className="bg-slate-50 dark:bg-slate-700/50">
+                                    <tr>
+                                        <th className="px-3 py-3 text-left text-xs font-medium text-slate-500 dark:text-slate-300 uppercase tracking-wider w-1/4">{t('m13_monteCarloSimulation.table.variable')}</th>
+                                        <th className="px-3 py-3 text-left text-xs font-medium text-slate-500 dark:text-slate-300 uppercase tracking-wider w-1/4">{t('m13_monteCarloSimulation.table.distribution')}</th>
+                                        <th className="px-3 py-3 text-left text-xs font-medium text-slate-500 dark:text-slate-300 uppercase tracking-wider w-2/4">{t('m13_monteCarloSimulation.table.parameters')}</th>
+                                    </tr>
+                                </thead>
+                                <tbody className="bg-white dark:bg-slate-800 divide-y divide-slate-200 dark:divide-slate-700">
+                                    {variables.map(v => {
+                                        const settings = projectData.monteCarlo.variables[v.id] || { distribution: 'None', param1: v.baseValue, param2: 0 };
+                                        return (
+                                        <tr key={v.id}>
+                                            <td className="px-3 py-2 text-sm font-medium">{v.name}</td>
+                                            <td className="px-3 py-2">
+                                                <Select
+                                                    value={settings.distribution}
+                                                    onChange={(e) => updateMonteCarloParameter(v.id, { distribution: e.target.value as Distribution })}
+                                                    className="py-1 px-2 text-xs"
+                                                >
+                                                    {Object.keys(t('m13_monteCarloSimulation.distributions', { returnObjects: true })).map(dist => (
+                                                        <option key={dist} value={dist}>
+                                                            {t(`m13_monteCarloSimulation.distributions.${dist}`)}
+                                                        </option>
+                                                    ))}
+                                                </Select>
+                                            </td>
+                                            <td className="px-3 py-2">
+                                                <ParametersCell variableId={v.id} settings={settings} />
+                                            </td>
                                         </tr>
-                                    </thead>
-                                    <tbody>
-                                        {resultsKpis.map(({key, label, isCurrency, isPercent}) => {
-                                            const stats = simulationResults[key as keyof typeof simulationResults];
-                                            if(!stats || typeof stats !== 'object' || !('mean' in stats)) return null;
-                                            return (
-                                                <tr key={key} className="border-t border-slate-200 dark:border-slate-700">
-                                                    <td className="p-2 font-medium">{label}</td>
-                                                    <td className="p-2 text-right font-mono">{formatValue(stats.mean, isPercent, isCurrency)}</td>
-                                                    <td className="p-2 text-right font-mono">{formatValue(stats.median, isPercent, isCurrency)}</td>
-                                                    <td className="p-2 text-right font-mono">{formatValue(stats.stdDev, isPercent, isCurrency)}</td>
-                                                    <td className="p-2 text-right font-mono">{formatValue(stats.p10, isPercent, isCurrency)}</td>
-                                                    <td className="p-2 text-right font-mono">{formatValue(stats.p25, isPercent, isCurrency)}</td>
-                                                    <td className="p-2 text-right font-mono">{formatValue(stats.p75, isPercent, isCurrency)}</td>
-                                                    <td className="p-2 text-right font-mono">{formatValue(stats.p90, isPercent, isCurrency)}</td>
-                                                </tr>
-                                            )
-                                        })}
-                                    </tbody>
-                                </table>
-                            </div>
-                            <div className="bg-slate-50 dark:bg-slate-700/50 p-4 rounded-lg space-y-4">
-                                <h4 className="font-semibold">{t('m13_monteCarloSimulation.probabilitiesTitle')}</h4>
-                                <div className="flex justify-between items-center">
-                                    <span>{t('m13_monteCarloSimulation.probNPVPositive')}</span>
-                                    <span className="font-bold text-lg text-green-600 dark:text-green-400">{formatValue(simulationResults.probabilityNPVPositive * 100)}%</span>
-                                </div>
-                                <div className="flex justify-between items-center">
-                                    <span>{t('m13_monteCarloSimulation.probIRRgtDiscount')}</span>
-                                    <span className="font-bold text-lg text-green-600 dark:text-green-400">{formatValue(simulationResults.probabilityIRRgtDiscountRate * 100)}%</span>
-                                </div>
-                            </div>
+                                    )})}
+                                </tbody>
+                            </table>
                         </div>
                     </Card>
+                </div>
 
-                     {simulationRawData && (
-                        <Card title={chartTitle}>
-                             <div className="flex flex-wrap gap-4 items-center mb-4">
-                                <div>
-                                    <label htmlFor="kpi-select" className="text-sm font-medium mr-2">{t('m13_monteCarloSimulation.visualizeKpi')}</label>
-                                    <Select id="kpi-select" value={visualizedKpi} onChange={e => setVisualizedKpi(e.target.value as KpiKey)}>
-                                        {resultsKpis.map(kpi => <option key={kpi.key} value={kpi.key}>{kpi.label}</option>)}
-                                    </Select>
-                                </div>
-                                <div>
-                                    <span className="text-sm font-medium mr-2">{t('m13_monteCarloSimulation.chartType')}</span>
-                                    <div className="inline-flex rounded-md shadow-sm" role="group">
-                                        <Button
-                                            size="sm"
-                                            variant={chartType === 'pdf' ? 'primary' : 'secondary'}
-                                            onClick={() => setChartType('pdf')}
-                                            className="rounded-r-none rtl:rounded-l-none rtl:rounded-r-md"
-                                        >
-                                            {t('m13_monteCarloSimulation.histogram')}
-                                        </Button>
-                                        <Button
-                                            size="sm"
-                                            variant={chartType === 'cdf' ? 'primary' : 'secondary'}
-                                            onClick={() => setChartType('cdf')}
-                                            className="rounded-l-none rtl:rounded-r-none rtl:rounded-l-md"
-                                        >
-                                            {t('m13_monteCarloSimulation.cdf')}
-                                        </Button>
-                                    </div>
-                                </div>
+                <div className="lg:col-span-2">
+                     <Card title={t('m13_monteCarloSimulation.setupTitle')}>
+                        <div className="space-y-4">
+                             <div>
+                                <label htmlFor="iterations" className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">{t('m13_monteCarloSimulation.iterationsLabel')}</label>
+                                <Input
+                                    id="iterations"
+                                    type="number"
+                                    value={projectData.monteCarlo.iterations}
+                                    onChange={(e) => updateMonteCarloIterations(Number(e.target.value))}
+                                    min="100"
+                                    max="50000"
+                                    step="100"
+                                    disabled={simulationStatus === 'running'}
+                                />
                              </div>
-                             <SimulationHistogram
-                                key={`${visualizedKpi}-${chartType}`} // Force re-render on change
-                                data={simulationRawData[visualizedKpi]}
-                                stats={simulationResults[visualizedKpi]}
-                                kpiLabel={kpiLabel}
-                                chartType={chartType}
-                                isCurrency={resultsKpis.find(k => k.key === visualizedKpi)?.isCurrency || false}
-                                isPercent={resultsKpis.find(k => k.key === visualizedKpi)?.isPercent || false}
-                             />
-                        </Card>
-                     )}
+                             <Button onClick={runSimulation} disabled={simulationStatus === 'running'} className="w-full">
+                                {simulationStatus === 'running' ? t('m13_monteCarloSimulation.runningButton') : t('m13_monteCarloSimulation.runButton')}
+                             </Button>
 
+                             {simulationStatus === 'running' && (
+                                <div>
+                                    <div className="w-full bg-slate-200 rounded-full h-2.5 dark:bg-slate-700">
+                                        <div className="bg-blue-600 h-2.5 rounded-full" style={{ width: `${simulationProgress}%` }}></div>
+                                    </div>
+                                    <p className="text-center text-sm mt-2">{t('m13_monteCarloSimulation.simulationInProgress')} ({simulationProgress.toFixed(0)}%)</p>
+                                </div>
+                             )}
+                        </div>
+                     </Card>
+                </div>
+            </div>
+
+            {simulationStatus === 'done' && simulationResults && (
+                <>
                     <AIInsightBox
                         title={t('m13_monteCarloSimulation.aiSummary.title')}
                         insight={aiInsight}
@@ -612,11 +426,84 @@ const M13_MonteCarloSimulation = () => {
                         loadingText={t('m13_monteCarloSimulation.aiSummary.generating')}
                         placeholderText={t('m13_monteCarloSimulation.aiSummary.placeholder')}
                     />
-                </div>
+                    
+                    <Card title={t('m13_monteCarloSimulation.resultsTitle')}>
+                         <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
+                            <div className="p-4 bg-green-100 dark:bg-green-900/50 rounded-lg text-center">
+                                <p className="text-sm text-green-800 dark:text-green-200">{t('m13_monteCarloSimulation.probNPVPositive')}</p>
+                                <p className="text-3xl font-bold text-green-700 dark:text-green-300">{formatPercent(simulationResults.probabilityNPVPositive)}</p>
+                            </div>
+                            <div className="p-4 bg-blue-100 dark:bg-blue-900/50 rounded-lg text-center">
+                                <p className="text-sm text-blue-800 dark:text-blue-200">{t('m13_monteCarloSimulation.probIRRgtDiscount')}</p>
+                                <p className="text-3xl font-bold text-blue-700 dark:text-blue-300">{formatPercent(simulationResults.probabilityIRRgtDiscountRate)}</p>
+                            </div>
+                        </div>
+
+                         <div className="overflow-x-auto">
+                            <table className="min-w-full divide-y divide-slate-200 dark:divide-slate-700">
+                                <thead className="bg-slate-50 dark:bg-slate-700/50">
+                                    <tr>
+                                        <th className="px-3 py-3 text-left text-xs font-medium text-slate-500 uppercase">{t('m13_monteCarloSimulation.resultsTable.kpi')}</th>
+                                        <th className="px-3 py-3 text-right text-xs font-medium text-slate-500 uppercase">{t('m13_monteCarloSimulation.resultsTable.mean')}</th>
+                                        <th className="px-3 py-3 text-right text-xs font-medium text-slate-500 uppercase">{t('m13_monteCarloSimulation.resultsTable.median')}</th>
+                                        <th className="px-3 py-3 text-right text-xs font-medium text-slate-500 uppercase">{t('m13_monteCarloSimulation.resultsTable.stdDev')}</th>
+                                        <th className="px-3 py-3 text-right text-xs font-medium text-slate-500 uppercase">{t('m13_monteCarloSimulation.resultsTable.p10')}</th>
+                                        <th className="px-3 py-3 text-right text-xs font-medium text-slate-500 uppercase">{t('m13_monteCarloSimulation.resultsTable.p90')}</th>
+                                    </tr>
+                                </thead>
+                                <tbody className="bg-white dark:bg-slate-800 divide-y divide-slate-200 dark:divide-slate-700">
+                                    {kpiDisplayData.map(kpi => {
+                                        const stats = simulationResults[kpi.key as KpiKey];
+                                        const formatter = kpi.isCurrency ? (val: number | undefined) => formatNumber(val, 0) : (kpi.isPercent ? formatPercent : formatNumber);
+                                        return (
+                                        <tr key={kpi.key}>
+                                            <td className="px-3 py-2 font-medium">{kpi.label}</td>
+                                            <td className="px-3 py-2 text-right font-mono">{formatter(stats.mean)}</td>
+                                            <td className="px-3 py-2 text-right font-mono">{formatter(stats.median)}</td>
+                                            <td className="px-3 py-2 text-right font-mono">{formatter(stats.stdDev)}</td>
+                                            <td className="px-3 py-2 text-right font-mono">{formatter(stats.p10)}</td>
+                                            <td className="px-3 py-2 text-right font-mono">{formatter(stats.p90)}</td>
+                                        </tr>
+                                    )})}
+                                </tbody>
+                            </table>
+                         </div>
+                    </Card>
+
+                    <Card title={t('m13_monteCarloSimulation.visualizationTitle')}>
+                        <div className="flex flex-wrap gap-4 items-center mb-4">
+                            <div>
+                                <label htmlFor="kpi-select" className="text-sm font-medium mr-2">{t('m13_monteCarloSimulation.visualizeKpi')}</label>
+                                <Select id="kpi-select" value={visualizedKpi} onChange={e => setVisualizedKpi(e.target.value as KpiKey)}>
+                                    {kpiDisplayData.map(kpi => <option key={kpi.key} value={kpi.key}>{kpi.label}</option>)}
+                                </Select>
+                            </div>
+                            <div>
+                                <label htmlFor="chart-type-select" className="text-sm font-medium mr-2">{t('m13_monteCarloSimulation.chartType')}</label>
+                                <Select id="chart-type-select" value={chartType} onChange={e => setChartType(e.target.value as 'pdf' | 'cdf')}>
+                                     <option value="pdf">{t('m13_monteCarloSimulation.histogram')}</option>
+                                     <option value="cdf">{t('m13_monteCarloSimulation.cdf')}</option>
+                                </Select>
+                            </div>
+                        </div>
+
+                         {simulationRawData && simulationResults && (
+                            <SimulationHistogram
+                                data={simulationRawData[visualizedKpi]}
+                                stats={simulationResults[visualizedKpi]}
+                                kpiLabel={kpiDisplayData.find(k => k.key === visualizedKpi)?.label || ''}
+                                chartType={chartType}
+                                isCurrency={kpiDisplayData.find(k => k.key === visualizedKpi)?.isCurrency || false}
+                                isPercent={kpiDisplayData.find(k => k.key === visualizedKpi)?.isPercent || false}
+                             />
+                         )}
+
+                    </Card>
+                </>
             )}
 
             {simulationStatus === 'idle' && !simulationResults && (
-                 <Card>
+                <Card>
                     <div className="text-center py-12">
                         <p className="text-slate-500 dark:text-slate-400">{t('m13_monteCarloSimulation.noResults')}</p>
                     </div>

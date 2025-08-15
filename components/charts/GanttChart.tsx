@@ -1,5 +1,5 @@
 import React, { useRef, useEffect } from 'react';
-import { select, timeParse, extent, timeDay, scaleTime, scaleBand, axisBottom, timeMonth, timeFormat, axisLeft } from 'd3';
+import { select, timeParse, extent, timeDay, scaleTime, scaleBand, axisBottom, timeMonth, timeFormat, axisLeft, NumberValue } from 'd3';
 import { useTranslation } from 'react-i18next';
 import { Task } from '../../types';
 
@@ -52,7 +52,7 @@ export const GanttChart: React.FC<GanttChartProps> = ({ tasks }) => {
     // X Axis
     chart.append("g")
         .attr("transform", `translate(0, ${height - margin.top - margin.bottom})`)
-        .call(axisBottom(xScale).ticks(timeMonth.every(1)).tickFormat(timeFormat("%b %Y")))
+        .call(axisBottom(xScale).ticks(timeMonth.every(1)).tickFormat((domainValue: Date | NumberValue) => timeFormat("%b %Y")(domainValue as Date)))
         .selectAll("text")
           .style("text-anchor", "end")
           .attr("dx", "-.8em")
@@ -102,7 +102,7 @@ export const GanttChart: React.FC<GanttChartProps> = ({ tasks }) => {
       .attr("fill", "#2563eb"); // blue-600
     
     // Interaction
-    bars.on("mouseover", function(event, d) {
+    bars.on("mouseover", function(_, d) {
         select(this).style("opacity", 0.7);
         tooltip.style("visibility", "visible")
                .html(`

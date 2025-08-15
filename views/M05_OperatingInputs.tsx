@@ -1,5 +1,3 @@
-
-
 import React, { useState, useMemo } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useProjectStore } from '../store/projectStore';
@@ -44,7 +42,7 @@ const M05_OperatingInputs = () => {
     const [isAiLoading, setIsAiLoading] = useState(false);
     
     const { costs, revenues } = projectData.operatingInputs;
-    const { currency, projectLife } = projectData.estimationBasis;
+    const { currency } = projectData.estimationBasis;
     const { tasks } = projectData.timeline;
 
     const formatCurrency = (value: number) => {

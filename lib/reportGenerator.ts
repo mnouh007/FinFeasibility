@@ -1,5 +1,3 @@
-
-
 import jsPDF from 'jspdf';
 import autoTable from 'jspdf-autotable';
 import html2canvas from 'html2canvas';
@@ -7,7 +5,6 @@ import {
     Document,
     Packer,
     Paragraph,
-    TextRun,
     HeadingLevel,
     ImageRun,
     AlignmentType,
@@ -15,9 +12,8 @@ import {
     TableRow,
     TableCell,
     WidthType,
-    BorderStyle
 } from 'docx';
-import { ProjectData, CalculatedOutputs, Scenario, MonteCarloResults } from '../types';
+import { ProjectData, CalculatedOutputs, MonteCarloResults } from '../types';
 import { calculateFinancialOutputs } from './financial';
 
 
@@ -236,7 +232,7 @@ export const generateDocxReport = async (options: ReportOptions): Promise<void> 
         if (imageDataUrl) {
             const base64String = imageDataUrl.replace(/^data:image\/png;base64,/, "");
             return new ImageRun({
-                type: 'png',
+                type: "png",
                 data: base64ToUint8Array(base64String),
                 transformation: { width: widthInches * 96, height: (widthInches * 96) * (5/8) },
             });

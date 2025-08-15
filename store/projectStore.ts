@@ -1,5 +1,3 @@
-
-
 import { create } from 'zustand';
 import { 
     ProjectData, 
@@ -12,9 +10,6 @@ import {
     RevenueItem,
     Loan,
     Task,
-    LaborCostItem,
-    RawMaterialCostItem,
-    AdminCostItem,
     Scenario,
     EstimationBasis,
     MonteCarloResults,

@@ -1,4 +1,3 @@
-
 import { GoogleGenAI, Type } from "@google/genai";
 import { CalculatedOutputs, ProjectData, ProjectDefinition, initialProjectData, MonteCarloResults, EstimationBasis, RevenueItem, OperatingCostItem, CapitalInvestmentItem, Loan, LoanAmortizationScheduleItem, CashFlowItem, BreakEvenAnalysis, FinancialRatios, WorkingCapitalScheduleItem, Task, Scenario, TimeBasedBreakEvenData } from "../types";
 
@@ -52,7 +51,7 @@ export const summarizeProjectDefinition = async (definition: ProjectDefinition, 
     `;
     try {
         const response = await ai.models.generateContent({ model: 'gemini-2.5-flash', contents: prompt });
-        return response.text;
+        return response.text ?? '';
     } catch (error) {
         handleApiError(error, "project summary");
     }
@@ -73,7 +72,7 @@ export const analyzeEstimationBasis = async (estimationBasis: EstimationBasis, p
     `;
     try {
         const response = await ai.models.generateContent({ model: 'gemini-2.5-flash', contents: prompt });
-        return response.text;
+        return response.text ?? '';
     } catch (error) {
         handleApiError(error, "estimation basis analysis");
     }
@@ -95,7 +94,7 @@ export const analyzeCapex = async (items: CapitalInvestmentItem[], language: str
     `;
     try {
         const response = await ai.models.generateContent({ model: 'gemini-2.5-flash', contents: prompt });
-        return response.text;
+        return response.text ?? '';
     } catch (error) {
         handleApiError(error, "CAPEX analysis");
     }
@@ -124,7 +123,7 @@ export const analyzeOperatingInputs = async (revenues: RevenueItem[], costs: Ope
     `;
     try {
         const response = await ai.models.generateContent({ model: 'gemini-2.5-flash', contents: prompt });
-        return response.text;
+        return response.text ?? '';
     } catch (error) {
         handleApiError(error, "operating inputs analysis");
     }
@@ -289,7 +288,10 @@ export const generateFullProject = async (prompt: string, language: string): Pro
                 responseSchema: projectDataSchema,
             }
         });
-        const jsonText = response.text.trim();
+        const jsonText = response.text?.trim();
+        if (!jsonText) {
+            throw new Error("Received empty response from AI for full project generation.");
+        }
         const generatedData = JSON.parse(jsonText);
 
         const finalProjectData: ProjectData = {
@@ -324,7 +326,7 @@ export const validateSchedule = async (tasks: Task[], language: string): Promise
     `;
     try {
         const response = await ai.models.generateContent({ model: 'gemini-2.5-flash', contents: prompt });
-        return response.text;
+        return response.text ?? '';
     } catch (error) {
         handleApiError(error, "schedule validation");
     }
@@ -348,7 +350,7 @@ export const analyzeFinancing = async (loans: Loan[], schedule: LoanAmortization
     `;
     try {
         const response = await ai.models.generateContent({ model: 'gemini-2.5-flash', contents: prompt });
-        return response.text;
+        return response.text ?? '';
     } catch(error) {
         handleApiError(error, "financing analysis");
     }
@@ -368,7 +370,7 @@ export const analyzeWorkingCapital = async (schedule: WorkingCapitalScheduleItem
     `;
     try {
         const response = await ai.models.generateContent({ model: 'gemini-2.5-flash', contents: prompt });
-        return response.text;
+        return response.text ?? '';
     } catch(error) {
         handleApiError(error, "working capital analysis");
     }
@@ -388,7 +390,7 @@ export const analyzeCashFlow = async (cashFlowStatement: CashFlowItem[], project
     `;
     try {
         const response = await ai.models.generateContent({ model: 'gemini-2.5-flash', contents: prompt });
-        return response.text;
+        return response.text ?? '';
     } catch (error) {
         handleApiError(error, "cash flow analysis");
     }
@@ -408,7 +410,7 @@ export const analyzeFinancialKpis = async (kpis: CalculatedOutputs, language: st
     `;
     try {
         const response = await ai.models.generateContent({ model: 'gemini-2.5-flash', contents: prompt });
-        return response.text;
+        return response.text ?? '';
     } catch (error) {
         handleApiError(error, "financial KPI analysis");
     }
@@ -434,7 +436,7 @@ export const analyzeBreakEven = async (analysis: BreakEvenAnalysis | null, timeB
     `;
     try {
         const response = await ai.models.generateContent({ model: 'gemini-2.5-flash', contents: prompt });
-        return response.text;
+        return response.text ?? '';
     } catch (error) {
         handleApiError(error, "break-even analysis");
     }
@@ -454,7 +456,7 @@ export const analyzeRatios = async (ratios: FinancialRatios, projectName: string
     `;
     try {
         const response = await ai.models.generateContent({ model: 'gemini-2.5-flash', contents: prompt });
-        return response.text;
+        return response.text ?? '';
     } catch (error) {
         handleApiError(error, "ratio analysis");
     }
@@ -475,7 +477,7 @@ export const analyzeSensitivityResults = async (baseCase: CalculatedOutputs, sce
     `;
     try {
         const response = await ai.models.generateContent({ model: 'gemini-2.5-flash', contents: prompt });
-        return response.text;
+        return response.text ?? '';
     } catch (error) {
         handleApiError(error, "sensitivity analysis");
     }
@@ -500,7 +502,7 @@ export const summarizeSimulationResults = async (results: MonteCarloResults, pro
     `;
     try {
         const response = await ai.models.generateContent({ model: 'gemini-2.5-flash', contents: prompt });
-        return response.text;
+        return response.text ?? '';
     } catch (error) {
         handleApiError(error, "simulation results summary");
     }
@@ -518,7 +520,7 @@ export const generateDashboardSummary = async (outputs: CalculatedOutputs, proje
     `;
     try {
         const response = await ai.models.generateContent({ model: 'gemini-2.5-flash', contents: prompt });
-        return response.text;
+        return response.text ?? '';
     } catch (error) {
         handleApiError(error, "dashboard summary");
     }
@@ -539,7 +541,7 @@ export const transformText = async (text: string, transformation: 'rewrite' | 'f
     const prompt = `${instruction}\n\nText: "${text}"`;
     try {
         const response = await ai.models.generateContent({ model: 'gemini-2.5-flash', contents: prompt });
-        return response.text;
+        return response.text ?? '';
     } catch (error) {
         handleApiError(error, `text transformation (${transformation})`);
     }

@@ -1,6 +1,5 @@
 import React from 'react';
 import { ResponsiveContainer, PieChart, Pie, Cell, Tooltip, Legend } from 'recharts';
-import { useTranslation } from 'react-i18next';
 import { useDarkMode } from '../../hooks/useDarkMode';
 import { Partner } from '../../types';
 
@@ -27,7 +26,6 @@ const CustomTooltip = ({ active, payload }: any) => {
 };
 
 export const OwnershipPieChart: React.FC<OwnershipPieChartProps> = ({ data }) => {
-  const { t } = useTranslation();
   const [isDarkMode] = useDarkMode();
   const legendColor = isDarkMode ? '#e2e8f0' : '#334155'; // slate-200, slate-700
 
@@ -49,7 +47,7 @@ export const OwnershipPieChart: React.FC<OwnershipPieChartProps> = ({ data }) =>
                     outerRadius={120}
                     fill="#8884d8"
                     labelLine={false}
-                    label={({ cx, cy, midAngle, innerRadius, outerRadius, percent, index }) => {
+                    label={({ cx, cy, midAngle, innerRadius, outerRadius, percent }) => {
                         const RADIAN = Math.PI / 180;
                         const radius = innerRadius + (outerRadius - innerRadius) * 0.5;
                         const x = cx + radius * Math.cos(-midAngle * RADIAN);
@@ -61,7 +59,7 @@ export const OwnershipPieChart: React.FC<OwnershipPieChartProps> = ({ data }) =>
                         );
                     }}
                 >
-                    {data.map((entry, index) => (
+                    {data.map((_, index) => (
                         <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
                     ))}
                 </Pie>

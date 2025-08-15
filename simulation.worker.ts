@@ -1,8 +1,6 @@
-
-
 import { calculateFinancialOutputs } from './lib/financial';
 import { normal, triangular, uniform, lognormal, beta, pert } from './lib/distributions';
-import { ProjectData, MonteCarloVariableKey, MonteCarloVariable, RevenueItem, EstimationBasis } from './types';
+import { ProjectData, RevenueItem, EstimationBasis } from './types';
 
 self.onmessage = (event) => {
     try {

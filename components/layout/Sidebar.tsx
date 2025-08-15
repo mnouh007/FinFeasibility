@@ -1,4 +1,3 @@
-import React from 'react';
 import { useTranslation } from 'react-i18next';
 import { NAV_ITEMS } from '../../constants';
 import { useProjectStore } from '../../store/projectStore';
