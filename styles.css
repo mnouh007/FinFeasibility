@@ -1,0 +1,30 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  body {
+    @apply bg-slate-50 dark:bg-slate-900 text-slate-800 dark:text-slate-200 transition-colors duration-300;
+    font-family: 'Inter', sans-serif;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
+  *:focus-visible {
+      @apply outline-none ring-2 ring-offset-2 ring-blue-500 dark:ring-offset-slate-900;
+  }
+}
+
+@layer utilities {
+  .sidebar-scroll::-webkit-scrollbar {
+    width: 4px;
+  }
+  .sidebar-scroll::-webkit-scrollbar-thumb {
+    @apply bg-slate-500 rounded-full;
+  }
+  .dark .sidebar-scroll::-webkit-scrollbar-thumb {
+      @apply bg-slate-400;
+  }
+  .sidebar-scroll::-webkit-scrollbar-track {
+    background-color: transparent;
+  }
+}

@@ -77,7 +77,7 @@ function App() {
   const ActiveComponent = moduleMap[activeModule] || M14; // Default to Dashboard
 
   return (
-    <div className="flex h-screen bg-slate-50 dark:bg-slate-900 text-slate-800 dark:text-slate-200 antialiased">
+    <div className="flex h-screen bg-slate-50 dark:bg-slate-900 text-slate-800 dark:text-slate-200 antialiased transition-colors duration-300">
       <Sidebar />
       <div className="flex-1 flex flex-col overflow-hidden">
         <Header isDarkMode={isDarkMode} toggleDarkMode={toggleDarkMode} />
