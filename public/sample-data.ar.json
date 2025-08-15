@@ -1,0 +1,96 @@
+
+{
+  "definition": {
+    "projectName": "مركز ميد سكان للأشعة التشخيصية والتداخلية المتقدمة",
+    "projectDescription": "منشأة تصوير طبي على أحدث طراز مصممة لتقديم خدمات الأشعة التشخيصية والتداخلية الشاملة. سيتم تجهيز المركز بوسائل تصوير متقدمة، بما في ذلك التصوير بالرنين المغناطيسي، والتصوير المقطعي، والتصوير المقطعي بالإصدار البوزيتروني، وتصوير الأوعية، بهدف تقليل أوقات انتظار المرضى وتحسين الدقة التشخيصية للمنطقة.",
+    "objectives": "1. تقديم خدمات تصوير تشخيصي عالية الجودة ومعتمدة.\n2. إدخال إجراءات الأشعة التداخلية المتقدمة إلى النظام البيئي للرعاية الصحية المحلي.\n3. إقامة شراكات استراتيجية مع المستشفيات والعيادات الإقليمية لتبسيط رعاية المرضى.\n4. الحصول على اعتماد الكلية الأمريكية للأشعة (ACR) في غضون ثلاث سنوات من التشغيل.",
+    "baseCase": "حاليًا، يواجه المرضى قوائم انتظار طويلة (3-6 أشهر) للتصوير المتقدم في المستشفيات العامة وغالبًا ما يسافرون إلى مدن أخرى لإجراءات متخصصة. تستخدم المراكز الخاصة المحلية الحالية معدات قديمة ذات قدرات تشخيصية محدودة.",
+    "projectLocation": "مجمع متروبوليس الصحي، مبنى 7",
+    "geographicScope": "Single Governorate",
+    "stakeholders": ["وزارة الصحة", "صندوق التأمين الصحي الوطني", "المستشفيات الإقليمية", "الجامعة الطبية"],
+    "partners": [
+      { "id": "p1", "name": "ميد إنفست كابيتال", "share": 60 },
+      { "id": "p2", "name": "مجموعة أطباء الأشعة المتحدون", "share": 25 },
+      { "id": "p3", "name": "شريك تقني (أسهم المورد)", "share": 15 }
+    ]
+  },
+  "estimationBasis": {
+    "currency": "USD",
+    "projectLife": 15,
+    "discountRate": 9.5,
+    "taxRate": 20,
+    "inflationRate": 2.5,
+    "revenueGrowthRate": 6,
+    "variableCostGrowthRate": 4,
+    "fixedCostGrowthRate": 3,
+    "workingCapitalPercentage": 12,
+    "depreciationMethod": "Declining Balance",
+    "depreciationRates": {
+      "Buildings": 4,
+      "Machinery": 15,
+      "Furniture": 10,
+      "Equipment": 20
+    },
+    "salvageValues": {
+      "Buildings": 15,
+      "Machinery": 10,
+      "Furniture": 5,
+      "Equipment": 5
+    },
+    "initialCurrentAssets": 150000,
+    "initialCurrentLiabilities": 75000,
+    "initialInventory": 100000,
+    "ebitMultiple": 7
+  },
+  "capitalInvestment": {
+    "items": [
+      { "id": "ci1", "category": "Buildings", "item": "تشييد العيادة الرئيسية (معزولة إشعاعيًا)", "cost": 2500000, "linkedTaskId": "t3" },
+      { "id": "ci2", "category": "Machinery", "item": "جهاز تصوير بالرنين المغناطيسي (1.5 تسلا)", "cost": 1800000, "linkedTaskId": "t5" },
+      { "id": "ci3", "category": "Machinery", "item": "جهاز تصوير مقطعي (128 شريحة)", "cost": 950000, "linkedTaskId": "t5" },
+      { "id": "ci4", "category": "Machinery", "item": "جناح تصوير الأوعية التداخلي", "cost": 1200000, "linkedTaskId": "t5" },
+      { "id": "ci5", "category": "Equipment", "item": "وحدة الأشعة السينية الرقمية وتصوير الثدي", "cost": 450000, "linkedTaskId": "t5" },
+      { "id": "ci6", "category": "Equipment", "item": "أجهزة الموجات فوق الصوتية (3 وحدات)", "cost": 225000, "linkedTaskId": "t5" },
+      { "id": "ci7", "category": "Equipment", "item": "خادم PACS/RIS والبنية التحتية لتكنولوجيا المعلومات", "cost": 350000, "linkedTaskId": "t7" },
+      { "id": "ci8", "category": "Furniture", "item": "أثاث طبي ومكتبي", "cost": 180000, "linkedTaskId": "t3" }
+    ]
+  },
+  "timeline": {
+    "tasks": [
+      { "id": "t1", "name": "التصاريح وموافقات السلطة الصحية", "startDate": "2024-07-01", "endDate": "2024-12-31", "progress": 90, "dependencies": [] },
+      { "id": "t2", "name": "التصميم المعماري والهندسي", "startDate": "2024-10-01", "endDate": "2025-02-28", "progress": 100, "dependencies": ["t1"] },
+      { "id": "t3", "name": "تشييد وتجهيز المنشأة", "startDate": "2025-03-01", "endDate": "2025-11-30", "progress": 60, "dependencies": ["t2"] },
+      { "id": "t4", "name": "شراء معدات التصوير", "startDate": "2025-06-01", "endDate": "2025-12-31", "progress": 50, "dependencies": [] },
+      { "id": "t5", "name": "تركيب وتشغيل المعدات", "startDate": "2025-12-01", "endDate": "2026-03-31", "progress": 10, "dependencies": ["t3", "t4"] },
+      { "id": "t6", "name": "تعيين وتدريب الكادر الفني", "startDate": "2026-01-01", "endDate": "2026-04-30", "progress": 0, "dependencies": [] },
+      { "id": "t7", "name": "تطبيق نظام PACS/RIS", "startDate": "2026-02-01", "endDate": "2026-05-31", "progress": 0, "dependencies": ["t5"] },
+      { "id": "t8", "name": "الترخيص التشغيلي والتحضير للاعتماد", "startDate": "2026-04-01", "endDate": "2026-06-30", "progress": 0, "dependencies": ["t5", "t6", "t7"] },
+      { "id": "t9", "name": "إطلاق الخدمة وبدء العمليات", "startDate": "2026-07-01", "endDate": "2026-07-31", "progress": 0, "dependencies": ["t8"] }
+    ]
+  },
+  "operatingInputs": {
+    "costs": [
+      { "id": "cost1", "category": "Raw Materials", "item": "وسائط التباين والمستحضرات الصيدلانية الإشعاعية", "unitCost": 500000, "quantity": 1, "linkedTaskId": "t9" },
+      { "id": "cost2", "category": "Raw Materials", "item": "لوازم طبية عامة ومستهلكات", "unitCost": 150000, "quantity": 1, "linkedTaskId": "t9" },
+      { "id": "cost3", "category": "Labor", "item": "أطباء أشعة", "count": 4, "monthlySalary": 15000, "linkedTaskId": "t6" },
+      { "id": "cost4", "category": "Labor", "item": "فنيو أشعة", "count": 8, "monthlySalary": 5000, "linkedTaskId": "t6" },
+      { "id": "cost5", "category": "Labor", "item": "ممرضون ومساعدون طبيون", "count": 6, "monthlySalary": 4000, "linkedTaskId": "t6" },
+      { "id": "cost6", "category": "Labor", "item": "موظفو إدارة ودعم", "count": 5, "monthlySalary": 3500, "linkedTaskId": "t6" },
+      { "id": "cost7", "category": "General & Admin", "item": "عقود خدمة المعدات (من الشركة المصنعة)", "cost": 750000, "linkedTaskId": "t8" },
+      { "id": "cost8", "category": "General & Admin", "item": "مرافق (كهرباء عالية)", "cost": 250000, "linkedTaskId": "t9" },
+      { "id": "cost9", "category": "General & Admin", "item": "تراخيص البرامج وصيانة تكنولوجيا المعلومات", "cost": 120000, "linkedTaskId": "t8" },
+      { "id": "cost10", "category": "General & Admin", "item": "تأمين ضد الأخطاء الطبية", "cost": 180000, "linkedTaskId": "t8" }
+    ],
+    "revenues": [
+      { "id": "rev1", "item": "فحوصات الرنين المغناطيسي", "unitPrice": 800, "quantity": 3000, "linkedTaskId": "t9" },
+      { "id": "rev2", "item": "فحوصات التصوير المقطعي", "unitPrice": 550, "quantity": 5000, "linkedTaskId": "t9" },
+      { "id": "rev3", "item": "الإجراءات التداخلية", "unitPrice": 2500, "quantity": 800, "linkedTaskId": "t9" },
+      { "id": "rev4", "item": "الموجات فوق الصوتية/الأشعة السينية/أخرى", "unitPrice": 150, "quantity": 10000, "linkedTaskId": "t9" }
+    ]
+  },
+  "financing": {
+    "loans": [
+      { "id": "loan1", "source": "بنك البنية التحتية الوطني", "principal": 2500000, "interestRate": 6.5, "term": 15, "startYear": 1 },
+      { "id": "loan2", "source": "تمويل المعدات الطبية", "principal": 3000000, "interestRate": 8.0, "term": 7, "startYear": 2 }
+    ]
+  }
+}

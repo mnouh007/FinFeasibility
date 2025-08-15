@@ -1,0 +1,96 @@
+
+{
+  "definition": {
+    "projectName": "MedScan Diagnostic & Interventional Radiology Center",
+    "projectDescription": "A state-of-the-art medical imaging facility designed to provide comprehensive diagnostic and interventional radiology services. The center will be equipped with advanced imaging modalities, including MRI, CT, PET-CT, and Angiography, aiming to reduce patient wait times and improve diagnostic accuracy for the region.",
+    "objectives": "1. Provide high-quality, accredited diagnostic imaging services.\n2. Introduce advanced interventional radiology procedures to the local healthcare ecosystem.\n3. Establish strategic partnerships with regional hospitals and clinics to streamline patient care.\n4. Achieve American College of Radiology (ACR) accreditation within three years of operation.",
+    "baseCase": "Currently, patients face long waiting lists (3-6 months) for advanced imaging at public hospitals and often travel to other cities for specialized procedures. The existing local private centers use older equipment with limited diagnostic capabilities.",
+    "projectLocation": "Metropolis Health Park, Building 7",
+    "geographicScope": "Single Governorate",
+    "stakeholders": ["Ministry of Health", "National Health Insurance Fund", "Regional Hospitals", "Medical University"],
+    "partners": [
+      { "id": "p1", "name": "MedInvest Capital", "share": 60 },
+      { "id": "p2", "name": "Radiology Associates Group", "share": 25 },
+      { "id": "p3", "name": "Technology Partner (Vendor Equity)", "share": 15 }
+    ]
+  },
+  "estimationBasis": {
+    "currency": "USD",
+    "projectLife": 15,
+    "discountRate": 9.5,
+    "taxRate": 20,
+    "inflationRate": 2.5,
+    "revenueGrowthRate": 6,
+    "variableCostGrowthRate": 4,
+    "fixedCostGrowthRate": 3,
+    "workingCapitalPercentage": 12,
+    "depreciationMethod": "Declining Balance",
+    "depreciationRates": {
+      "Buildings": 4,
+      "Machinery": 15,
+      "Furniture": 10,
+      "Equipment": 20
+    },
+    "salvageValues": {
+      "Buildings": 15,
+      "Machinery": 10,
+      "Furniture": 5,
+      "Equipment": 5
+    },
+    "initialCurrentAssets": 150000,
+    "initialCurrentLiabilities": 75000,
+    "initialInventory": 100000,
+    "ebitMultiple": 7
+  },
+  "capitalInvestment": {
+    "items": [
+      { "id": "ci1", "category": "Buildings", "item": "Main Clinic Construction (Radiation Shielded)", "cost": 2500000, "linkedTaskId": "t3" },
+      { "id": "ci2", "category": "Machinery", "item": "MRI Scanner (1.5T)", "cost": 1800000, "linkedTaskId": "t5" },
+      { "id": "ci3", "category": "Machinery", "item": "CT Scanner (128-slice)", "cost": 950000, "linkedTaskId": "t5" },
+      { "id": "ci4", "category": "Machinery", "item": "Interventional Angiography Suite", "cost": 1200000, "linkedTaskId": "t5" },
+      { "id": "ci5", "category": "Equipment", "item": "Digital X-Ray & Mammography Unit", "cost": 450000, "linkedTaskId": "t5" },
+      { "id": "ci6", "category": "Equipment", "item": "Ultrasound Machines (x3)", "cost": 225000, "linkedTaskId": "t5" },
+      { "id": "ci7", "category": "Equipment", "item": "PACS/RIS Server and IT Infrastructure", "cost": 350000, "linkedTaskId": "t7" },
+      { "id": "ci8", "category": "Furniture", "item": "Medical & Office Furnishing", "cost": 180000, "linkedTaskId": "t3" }
+    ]
+  },
+  "timeline": {
+    "tasks": [
+      { "id": "t1", "name": "Permitting & Health Authority Approvals", "startDate": "2024-07-01", "endDate": "2024-12-31", "progress": 90, "dependencies": [] },
+      { "id": "t2", "name": "Architectural Design & Engineering", "startDate": "2024-10-01", "endDate": "2025-02-28", "progress": 100, "dependencies": ["t1"] },
+      { "id": "t3", "name": "Facility Construction & Fit-Out", "startDate": "2025-03-01", "endDate": "2025-11-30", "progress": 60, "dependencies": ["t2"] },
+      { "id": "t4", "name": "Procurement of Imaging Equipment", "startDate": "2025-06-01", "endDate": "2025-12-31", "progress": 50, "dependencies": [] },
+      { "id": "t5", "name": "Equipment Installation & Commissioning", "startDate": "2025-12-01", "endDate": "2026-03-31", "progress": 10, "dependencies": ["t3", "t4"] },
+      { "id": "t6", "name": "Hiring & Training of Technical Staff", "startDate": "2026-01-01", "endDate": "2026-04-30", "progress": 0, "dependencies": [] },
+      { "id": "t7", "name": "PACS/RIS System Implementation", "startDate": "2026-02-01", "endDate": "2026-05-31", "progress": 0, "dependencies": ["t5"] },
+      { "id": "t8", "name": "Operational Licensing & Accreditation Prep", "startDate": "2026-04-01", "endDate": "2026-06-30", "progress": 0, "dependencies": ["t5", "t6", "t7"] },
+      { "id": "t9", "name": "Service Launch & Operations Start", "startDate": "2026-07-01", "endDate": "2026-07-31", "progress": 0, "dependencies": ["t8"] }
+    ]
+  },
+  "operatingInputs": {
+    "costs": [
+      { "id": "cost1", "category": "Raw Materials", "item": "Contrast Media & Radiopharmaceuticals", "unitCost": 500000, "quantity": 1, "linkedTaskId": "t9" },
+      { "id": "cost2", "category": "Raw Materials", "item": "General Medical Supplies & Disposables", "unitCost": 150000, "quantity": 1, "linkedTaskId": "t9" },
+      { "id": "cost3", "category": "Labor", "item": "Radiologists", "count": 4, "monthlySalary": 15000, "linkedTaskId": "t6" },
+      { "id": "cost4", "category": "Labor", "item": "Radiology Technologists", "count": 8, "monthlySalary": 5000, "linkedTaskId": "t6" },
+      { "id": "cost5", "category": "Labor", "item": "Nurses & Medical Assistants", "count": 6, "monthlySalary": 4000, "linkedTaskId": "t6" },
+      { "id": "cost6", "category": "Labor", "item": "Admin & Support Staff", "count": 5, "monthlySalary": 3500, "linkedTaskId": "t6" },
+      { "id": "cost7", "category": "General & Admin", "item": "Equipment Service Contracts (OEM)", "cost": 750000, "linkedTaskId": "t8" },
+      { "id": "cost8", "category": "General & Admin", "item": "Utilities (High Electricity)", "cost": 250000, "linkedTaskId": "t9" },
+      { "id": "cost9", "category": "General & Admin", "item": "Software Licenses & IT Maintenance", "cost": 120000, "linkedTaskId": "t8" },
+      { "id": "cost10", "category": "General & Admin", "item": "Medical Malpractice Insurance", "cost": 180000, "linkedTaskId": "t8" }
+    ],
+    "revenues": [
+      { "id": "rev1", "item": "MRI Scans", "unitPrice": 800, "quantity": 3000, "linkedTaskId": "t9" },
+      { "id": "rev2", "item": "CT Scans", "unitPrice": 550, "quantity": 5000, "linkedTaskId": "t9" },
+      { "id": "rev3", "item": "Interventional Procedures", "unitPrice": 2500, "quantity": 800, "linkedTaskId": "t9" },
+      { "id": "rev4", "item": "Ultrasound/X-Ray/Other", "unitPrice": 150, "quantity": 10000, "linkedTaskId": "t9" }
+    ]
+  },
+  "financing": {
+    "loans": [
+      { "id": "loan1", "source": "National Infrastructure Bank", "principal": 2500000, "interestRate": 6.5, "term": 15, "startYear": 1 },
+      { "id": "loan2", "source": "Medical Equipment Finance", "principal": 3000000, "interestRate": 8.0, "term": 7, "startYear": 2 }
+    ]
+  }
+}

@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html lang="en" dir="ltr">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Feasibility and Financial Analysis App</title>
+    
+    <!-- Leaflet CSS -->
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin=""/>
+    
+    <!-- Tailwind Play CDN for prototype mode -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style type="text/tailwindcss">
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
+
+        @layer base {
+          body {
+            @apply bg-slate-50 dark:bg-slate-900 text-slate-800 dark:text-slate-200 transition-colors duration-300;
+            font-family: 'Inter', sans-serif;
+            -webkit-font-smoothing: antialiased;
+            -moz-osx-font-smoothing: grayscale;
+          }
+          *:focus-visible {
+              @apply outline-none ring-2 ring-offset-2 ring-blue-500 dark:ring-offset-slate-900;
+          }
+        }
+
+        @layer utilities {
+          .sidebar-scroll::-webkit-scrollbar {
+            width: 4px;
+          }
+          .sidebar-scroll::-webkit-scrollbar-thumb {
+            @apply bg-slate-500 rounded-full;
+          }
+          .dark .sidebar-scroll::-webkit-scrollbar-thumb {
+              @apply bg-slate-400;
+          }
+          .sidebar-scroll::-webkit-scrollbar-track {
+            background-color: transparent;
+          }
+        }
+    </style>
+
+<script type="importmap">
+{
+  "imports": {
+    "react": "https://esm.sh/react@^19.1.1",
+    "react-dom/": "https://esm.sh/react-dom@^19.1.1/",
+    "react-i18next": "https://esm.sh/react-i18next@^15.6.1",
+    "react/": "https://esm.sh/react@^19.1.1/",
+    "i18next": "https://esm.sh/i18next@^25.3.6",
+    "i18next-browser-languagedetector": "https://esm.sh/i18next-browser-languagedetector@^8.2.0",
+    "zustand": "https://esm.sh/zustand@^5.0.7",
+    "react-dom": "https://esm.sh/react-dom@^19.1.1",
+    "d3": "https://esm.sh/d3@^7.9.0",
+    "recharts": "https://esm.sh/recharts@^3.1.2",
+    "@google/genai": "https://esm.sh/@google/genai@^1.14.0",
+    "jspdf": "https://esm.sh/jspdf@^3.0.1",
+    "jspdf-autotable": "https://esm.sh/jspdf-autotable@^5.0.2",
+    "html2canvas": "https://esm.sh/html2canvas@^1.4.1",
+    "docx": "https://esm.sh/docx@^9.5.1",
+    "leaflet": "https://esm.sh/leaflet@^1.9.4",
+    "vite": "https://esm.sh/vite@^7.1.2",
+    "@vitejs/plugin-react": "https://esm.sh/@vitejs/plugin-react@^5.0.0"
+  }
+}
+</script>
+<link rel="stylesheet" href="/index.css">
+</head>
+  <body>
+    <div id="root"></div>
+    <script type="module" src="/index.tsx"></script>
+  </body>
+</html>
